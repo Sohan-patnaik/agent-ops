@@ -82,9 +82,7 @@ python -m pip install -r requirements.txt
 ### 2. Configure Environment
 Set up your local configuration in `.env`:
 ```env
-AGENTOPS_API_URL=http://127.0.0.1:8000
-HOST=127.0.0.1
-PORT=8000
+AGENTOPS_API_URL=https://agent-ops.onrender.com
 OPENAI_API_KEY=your-key-here # Optional: Required for active Ragas evaluation
 ```
 
