@@ -1,28 +1,20 @@
 from datetime import datetime
 from typing import Any, Dict, List
 
-from evaluators.base import BaseEvaluator
-from evaluators.ragas import RagasEvaluator
-from evaluators.heuristic import HeuristicEvaluator
+from .evaluators.base import BaseEvaluator
+from .evaluators.ragas import RagasEvaluator
+from .evaluators.heuristic import HeuristicEvaluator
 # In-memory storage (MVP)
 _evaluation_records: List[Dict[str, Any]] = []
 
 
 def get_evaluator() -> BaseEvaluator:
-    """
-    Returns the default evaluator.
-    RagasEvaluator automatically falls back to
-    HeuristicEvaluator when needed.
-    """
-    try:
-        return RagasEvaluator()
-    except Exception:
-        return HeuristicEvaluator()
+    return HeuristicEvaluator()
 
 
 def evaluate(
     prompt: str,
-    answer: str,
+    response: str,
     context: List[str],
 ) -> Dict[str, Any]:
     """
@@ -33,13 +25,13 @@ def evaluate(
 
     scores = evaluator.evaluate(
         prompt,
-        answer,
+        response,
         context,
     )
 
     record = save_evaluation_record(
         prompt=prompt,
-        answer=answer,
+        response=response,
         context=context,
         scores=scores,
     )
@@ -49,14 +41,14 @@ def evaluate(
 
 def save_evaluation_record(
     prompt: str,
-    answer: str,
+    response: str,
     context: List[str],
     scores: Dict[str, float],
 ) -> Dict[str, Any]:
 
     record = {
         "prompt": prompt,
-        "answer": answer,
+        "response": response,
         "context": context,
         "faithfulness": scores["faithfulness"],
         "relevance": scores["relevance"],

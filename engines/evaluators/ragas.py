@@ -1,5 +1,4 @@
-from base import BaseEvaluator
-from heuristic import HeuristicEvaluator
+from .base import BaseEvaluator
 from typing import Dict, List
 import os
 
@@ -13,16 +12,13 @@ except ImportError:
 
 
 class RagasEvaluator(BaseEvaluator):
-    def evaluate(self, prompt: str, answer: str, context: List[str]) -> Dict[str, float]:
-        # If ragas is not available or no OpenAI API key is set, default to HeuristicEvaluator
-        if not RAGAS_AVAILABLE or not os.getenv("OPENAI_API_KEY"):
-            heuristic = HeuristicEvaluator()
-            return heuristic.evaluate(prompt, answer, context)
+    def evaluate(self, prompt: str, response: str, context: List[str]) -> Dict[str, float]:
+        # If ragas is not available or no OpenAI API key is set, default to HeuristicEvaluato
 
         # Convert context to list for Ragas format
         data_samples = {
             'question': [prompt],
-            'answer': [answer],
+            'response': [response],
             'contexts': [context]
         }
         dataset = Dataset.from_dict(data_samples)

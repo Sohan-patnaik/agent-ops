@@ -27,8 +27,8 @@ class AgentOps:
 
     def evaluate(
         self,
-        question: str,
-        answer: str,
+        prompt: str,
+        response: str,
         context: Union[str, List[str]]
     ) -> Dict[str, Any]:
         """
@@ -36,7 +36,7 @@ class AgentOps:
         """
         return evaluate_call(
             api_url=self.api_url,
-            question=question,
-            answer=answer,
+            prompt=prompt,
+            response=response,
             context=context
         )

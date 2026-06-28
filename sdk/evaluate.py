@@ -13,7 +13,7 @@ def evaluate_call(
     """
 
     # Extract answer text
-    answer = (
+    response = (
         response.content
         if hasattr(response, "content")
         else str(response)
@@ -25,7 +25,7 @@ def evaluate_call(
 
     payload = {
         "prompt": prompt,
-        "answer": answer,
+        "response": response,
         "context": context,
     }
 

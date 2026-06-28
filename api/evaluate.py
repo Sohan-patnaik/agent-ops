@@ -12,7 +12,7 @@ router = APIRouter()
 
 class EvaluateRequest(BaseModel):
     prompt: str
-    answer: str
+    response: str
     context: List[str]
 
 class EvaluateResponse(BaseModel):
@@ -28,7 +28,7 @@ def post_evaluate(data: EvaluateRequest):
 
         result = evaluate(
             prompt=data.prompt,
-            answer=data.answer,
+            response=data.response,
             context=data.context,
         )
 
