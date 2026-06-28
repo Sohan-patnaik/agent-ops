@@ -131,6 +131,6 @@ print(eval_result)
 #### Retrieving Reports
 ```python
 import requests
-report = requests.get("http://127.0.0.1:8000/report").json()
+report = requests.get("https://agent-ops.onrender.com/report").json()
 print(report)
 ```
