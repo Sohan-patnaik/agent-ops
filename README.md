@@ -1,82 +1,39 @@
-# AgentOps SDK – LLM Observability & Evaluation Platform MVP
+# AgentOps SDK 🚀
 
-A developer tool that helps AI engineers monitor and evaluate their AI agents locally. This repository contains the SDK client, a FastAPI backend server, in-memory processing engines, and a telemetry pipeline.
+> Lightweight Python SDK for monitoring and evaluating LLM applications.
 
----
-
-## Architecture Flow
-
-```text
-Developer Agent
-      ↓ (Calls SDK method)
-AgentOps SDK
-      ↓ (HTTP POST payload & OpenTelemetry tracing)
-FastAPI Backend (main.py)
-      ↓ (Triggers Engines)
-Monitoring Engine   ↔   Evaluation Engine (Ragas/Heuristic fallback)
-      ↓
-Dashboard API (/report, /monitor, /evaluate)
-```
+AgentOps SDK enables developers to instrument AI applications with a simple API for **LLM monitoring**, **response evaluation**, and **report generation**. It is designed as a developer-first SDK with an extensible architecture for future LLM observability features.
 
 ---
 
-## Features
+## ✨ Features
 
-### 1. Automated LLM Monitoring
-- **OpenTelemetry Instrumentation**: Automatically traces LLM invocations using the standard `llm.call` span.
-- **Normalizer**: Automatically handles LangChain `AIMessage` objects and extracts token counts and models.
-- **Cost Calculation**: Computes query costs in real time (e.g., GPT-4o input: \$5.0/1M, output: \$15.0/1M).
+- 📊 **LLM Monitoring**
+  - Monitor LLM requests with a single `monitor()` call
+  - OpenTelemetry-based instrumentation
+  - Automatic latency, token usage, and cost tracking
 
-### 2. Automated RAG/LLM Evaluation
-- **Faithfulness**: Measures context alignment (Ragas metric with heuristic fallback).
-- **Relevance**: Measures query alignment (Ragas metric with heuristic fallback).
-- **Graceful Fallback**: Automatically defaults to a local token-heuristic evaluator if `ragas` or `OPENAI_API_KEY` are not configured, preventing runtime failures.
+- 🤖 **LLM Evaluation**
+  - Evaluate responses using **Faithfulness** and **Relevance**
+  - Lightweight heuristic evaluator (MVP)
+  - Designed for future RAGAS integration
 
-### 3. Aggregated Reporting
-- Global endpoints (`GET /report`) return average latencies, average query costs, total requests, and overall evaluation scores.
+- 📈 **Reporting**
+  - Generate aggregated monitoring and evaluation summaries
+  - Track average latency, cost, and evaluation scores
 
----
-
-## File Structure
-
-```text
-agent-ops/
-├── api/
-│   ├── monitor.py         # POST /monitor (logs payload), GET /monitor (gets logs)
-│   ├── evaluate.py        # POST /evaluate (runs ragas/heuristic), GET /evaluate
-│   └── report.py          # GET /report (aggregated statistics)
-│
-├── core/
-│   ├── config.py          # Configuration parser (loads from .env)
-│   └── constants.py       # Shared constants
-│
-├── engines/
-│   ├── monitoring_engine.py  # Stores logs in-memory and calculates LLM costs
-│   ├── evaluation_engine.py  # Computes faithfulness and relevance (Ragas/Heuristic)
-│   └── reporting_engine.py   # Computes average dashboard metrics
-│
-├── graph/
-│   └── workflow.py        # Orchestration helper (Monitor -> Evaluate -> Report)
-│
-├── sdk/
-│   ├── client.py          # Main SDK interface (AgentOps class)
-│   ├── monitor.py         # Handles OpenTelemetry spans and POSTs metrics
-│   ├── evaluate.py        # POSTs evaluation requests
-│   ├── normalizer.py      # Standardizes LangChain AIMessages
-│   └── pricing.py         # Pricing matrix and calculations
-│
-├── main.py                # Starts the FastAPI server (uvicorn)
-├── requirements.txt       # Dependencies
-└── .env                   # Configuration parameters
-```
+- ⚡ **Developer Friendly**
+  - Published on **PyPI**
+  - Simple Python API
+  - FastAPI backend
+  - Modular architecture
 
 ---
 
-## Quick Start
+# Installation
 
-### 1. Install Dependencies
 ```bash
-python -m pip install -r requirements.txt
+pip install agentops
 ```
 
 ### 2. Configure Environment
@@ -86,47 +43,32 @@ AGENTOPS_API_URL=https://agent-ops.onrender.com
 OPENAI_API_KEY=your-key-here # Optional: Required for active Ragas evaluation
 ```
 
-### 3. Start the Backend
-Start the backend server using Python:
-```bash
-python main.py
-```
+# Quick Start
 
-### 4. SDK Usage
-
-#### Monitoring an LLM Call
 ```python
-from sdk.client import AgentOps
-from langchain_core.messages import AIMessage
+from agentops import AgentOps
+from langchain_openai import ChatOpenAI
 
-agentops = AgentOps()
+client = AgentOps()
 
-# Pass a LangChain response object directly
-response = AIMessage(
-    content="Paris is the capital of France.",
-    response_metadata={
-        "token_usage": {"prompt_tokens": 100, "completion_tokens": 50, "total_tokens": 150},
-        "model_name": "gpt-4o"
-    }
-)
+llm = ChatOpenAI(model="gpt-4o")
 
-log_result = agentops.monitor(
-    prompt="What is the capital of France?",
+prompt = "What is Retrieval-Augmented Generation?"
+
+response = llm.invoke(prompt)
+
+client.monitor(
+    prompt=prompt,
     response=response
 )
-print(log_result)
-```
 
-#### Evaluating a QA Response
-```python
-eval_result = agentops.evaluate(
-    question="What is the capital of France?",
-    answer="Paris.",
-    context="Paris is the capital of France."
+client.evaluate(
+    prompt=prompt,
+    response=response,
+    context=[
+        "Retrieval-Augmented Generation (RAG) combines retrieval with LLM generation."
+    ]
 )
-print(eval_result)
-# Output: {'faithfulness': 1.0, 'relevance': 1.0}
-```
 
 #### Retrieving Reports
 ```python
@@ -134,3 +76,170 @@ import requests
 report = requests.get("https://agent-ops.onrender.com/report").json()
 print(report)
 ```
+
+---
+
+# SDK APIs
+
+## Monitor
+
+Instrument an LLM call.
+
+```python
+client.monitor(
+    prompt=prompt,
+    response=response
+)
+```
+
+Automatically captures:
+
+- Response latency
+- Token usage
+- Model information
+- Estimated cost
+- OpenTelemetry traces
+
+---
+
+## Evaluate
+
+Evaluate the generated response.
+
+```python
+client.evaluate(
+    prompt=prompt,
+    response=response,
+    context=context
+)
+```
+
+Returns
+
+```python
+{
+    "faithfulness": 0.91,
+    "relevance": 0.88
+}
+```
+
+Current MVP uses a lightweight heuristic evaluator.
+
+---
+
+## Report
+
+Generate an aggregated report.
+
+```python
+report = client.report()
+
+print(report)
+```
+
+Example output
+
+```python
+{
+    "total_requests": 15,
+    "avg_latency": 0.82,
+    "avg_cost": 0.00091,
+    "avg_faithfulness": 0.90,
+    "avg_relevance": 0.89
+}
+```
+
+---
+
+# Architecture
+
+```
+Developer Application
+          │
+          ▼
+     AgentOps SDK
+          │
+          ▼
+ OpenTelemetry Tracing
+          │
+          ▼
+ FastAPI Backend
+          │
+ ┌────────┴────────┐
+ ▼                 ▼
+Monitoring     Evaluation
+ Engine           Engine
+          │
+          ▼
+     Reporting API
+```
+
+---
+
+# Tech Stack
+
+- Python
+- FastAPI
+- OpenTelemetry
+- PyPI
+- Render
+- LangChain
+- LangGraph
+
+---
+
+# Current MVP
+
+Implemented
+
+- ✅ monitor()
+- ✅ evaluate()
+- ✅ report()
+- ✅ OpenTelemetry instrumentation
+- ✅ Heuristic evaluation
+- ✅ FastAPI backend
+- ✅ PyPI package
+
+---
+
+# Roadmap
+
+Upcoming features
+
+- RAGAS evaluation
+- DeepEval integration
+- Multiple LLM provider support
+- Streaming response monitoring
+- Interactive dashboard
+- PostgreSQL persistence
+- Docker deployment
+- Authentication
+- Team workspaces
+
+---
+
+# Why AgentOps?
+
+Modern LLM applications require more than generating responses—they require **observability**.
+
+AgentOps SDK provides a lightweight foundation for:
+
+- Monitoring AI applications
+- Evaluating response quality
+- Tracking latency and cost
+- Building production-ready AI systems
+
+while keeping the developer experience simple.
+
+---
+
+# Links
+
+- 📦 PyPI Package
+- 💻 GitHub Repository
+
+---
+
+# License
+
+MIT License
